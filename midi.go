@@ -43,6 +43,10 @@ func (t *Track) dump(w *bufio.Writer) {
 	for e := t.events.Front(); e != nil; e = e.Next() {
 		w.Write(e.Value.([]byte))
 	}
+
+	// Write the end of the track with 0 delay
+	w.Write(DeltaTime(0))
+	w.Write(EndOfTrack())
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -137,12 +141,10 @@ func PitchWheelChange(channel uint8, bb uint8, tt uint8) []byte {
 ///// Meta Events
 ////////////////////////////////////////////////////////////////////////////////
 
-// WIP: There are actually 16 of these
+// WIP: There are actually 13 of these
 
 func EndOfTrack() []byte {
 	return []byte{
-		0x00,
-		0xFF,
 		0x2F,
 		0x00,
 	}
@@ -180,6 +182,4 @@ func WriteOut(path string, sync byte, tperq uint16, tracks []Track) {
 	for i := 0; i < len(tracks); i++ {
 		tracks[i].dump(w)
 	}
-
-	w.Write(EndOfTrack())
 }
