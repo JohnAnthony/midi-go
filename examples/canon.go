@@ -31,5 +31,5 @@ func main() {
 		}
 	}
 
-	midi.WriteOut("test.midi", midi.Syncronous, 4, tracks)
+	midi.WriteOut("canon.mid", midi.Syncronous, 4, tracks)
 }
