@@ -12,14 +12,14 @@ func main() {
 	tracks[0] = midi.NewTrack()
 
 	for _, v := range cmajscaleup {
-		tracks[0].AddEvent(2, midi.NoteOn(0, v, 0xff))
-		tracks[0].AddEvent(2, midi.NoteOff(0, v, 0xff))
+		tracks[0].AddEvent(1, midi.NoteOn(0, 48, 0xff))
+		tracks[0].AddEvent(1, midi.NoteOn(0, v, 0xff))
 	}
 	
 	for _, v := range cmajscaledown {
-		tracks[0].AddEvent(2, midi.NoteOn(0, v, 0xff))
-		tracks[0].AddEvent(2, midi.NoteOff(0, v, 0xff))
+		tracks[0].AddEvent(1, midi.NoteOn(0, 48, 0xff))
+		tracks[0].AddEvent(1, midi.NoteOn(0, v, 0xff))
 	}
 
-	midi.WriteOut("test.midi", 0, 4, tracks)
+	midi.WriteOut("test.midi", midi.Asyncronous, 4, tracks)
 }

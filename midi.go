@@ -35,7 +35,7 @@ func (t *Track) AddEvent(time uint32, data []byte) {
 
 func (t *Track) dump(w *bufio.Writer) {
 	t.AddEvent(0, EndOfTrack())
-	
+
 	w.Write(trackhead)
 	w.WriteByte(byte(t.length >> 24))
 	w.WriteByte(byte(t.length >> 16))
@@ -153,9 +153,17 @@ func EndOfTrack() []byte {
 ///// Write tracks out!
 ////////////////////////////////////////////////////////////////////////////////
 
+type SyncType byte
+
+const (
+	OneTrack SyncType = 0
+	Syncronous = 1
+	Asyncronous = 2
+)
+
 var fileheader = []byte{0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06}
 
-func WriteOut(path string, sync byte, tperq uint16, tracks []Track) {
+func WriteOut(path string, sync SyncType, tperq uint16, tracks []Track) {
 	file, err := os.Create(path)
 	if err != nil {
 		log.Fatal(err)
@@ -171,7 +179,7 @@ func WriteOut(path string, sync byte, tperq uint16, tracks []Track) {
 	// "dd dd" is the number of delta ticks per quarter note (tperq)
 	w.Write(fileheader)
 	w.WriteByte(0)
-	w.WriteByte(sync)
+	w.WriteByte(byte(sync))
 	ntracks := len(tracks)
 	w.WriteByte(byte(ntracks >> 8))
 	w.WriteByte(byte(ntracks))
