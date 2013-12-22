@@ -21,7 +21,7 @@ var trackhead = []byte{0x4d, 0x54, 0x72, 0x6b}
 
 func NewTrack() Track {
 	return Track{
-		length: 8, // 8 bytes of header
+		length: 0, // Length doesn't include track header!
 		events: list.New(),
 	}
 }
