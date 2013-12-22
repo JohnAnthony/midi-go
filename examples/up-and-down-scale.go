@@ -21,5 +21,5 @@ func main() {
 		tracks[0].AddEvent(1, midi.NoteOn(0, v, 0xff))
 	}
 
-	midi.WriteOut("test.midi", midi.Asyncronous, 4, tracks)
+	midi.WriteOut("test.midi", midi.OneTrack, 4, tracks)
 }
