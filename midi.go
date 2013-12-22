@@ -4,54 +4,9 @@ import (
 	"bufio"
 	"os"
 	"log"
+	"bytes"
+	"container/list"
 )
-
-//////////////////////////////////////////////////
-///// Self-rolled binary trees for track data
-//////////////////////////////////////////////////
-
-type tracktree struct {
-	left  *tracktree
-	right *tracktree
-	time  uint32
-	event []byte
-}
-
-func (tt *tracktree) add(time uint32, data []byte) {
-	if time <= tt.time && tt.left != nil {
-		tt.left.add(time, data)
-		return
-	} else if time >= tt.time && tt.right != nil {
-		tt.right.add(time, data)
-		return
-	}
-
-	newt := tracktree{
-		left:  nil,
-		right: nil,
-		time:  time,
-		event: data,
-	}
-
-	if time <= tt.time {
-		tt.left = &newt
-	} else {
-		tt.right = &newt
-	}
-}
-
-func (tt *tracktree) dump(w *bufio.Writer) {
-	if tt.left != nil {
-		tt.left.dump(w)
-	}
-
-	w.Write(MakeDelta(tt.time))
-	w.Write(tt.event)
-
-	if tt.right != nil {
-		tt.right.dump(w)
-	}
-}
 
 //////////////////////////////////////////////////
 ///// Track handling
@@ -59,7 +14,7 @@ func (tt *tracktree) dump(w *bufio.Writer) {
 
 type Track struct {
 	length uint32
-	tree   *tracktree
+	events *list.List
 }
 
 var trackhead = []byte{0x4d, 0x54, 0x72, 0x6b}
@@ -67,23 +22,15 @@ var trackhead = []byte{0x4d, 0x54, 0x72, 0x6b}
 func NewTrack() Track {
 	return Track{
 		length: 8,
-		tree:   nil,
+		events: list.New(),
 	}
 }
 
 func (t *Track) AddEvent(time uint32, data []byte) {
-	if t.tree == nil {
-		t.tree = &tracktree{
-			left:  nil,
-			right: nil,
-			time:  time,
-			event: data,
-		}
-	} else {
-		t.tree.add(time, data)
-	}
-
-	t.length += uint32(len(data))
+	tslice := MakeDelta(time)
+	fullevent := bytes.Join([][]byte {tslice, data}, nil)
+	t.events.PushBack(fullevent) 
+	t.length += uint32(len(fullevent))
 }
 
 func (t *Track) dump(w *bufio.Writer) {
@@ -93,7 +40,9 @@ func (t *Track) dump(w *bufio.Writer) {
 	w.WriteByte(byte(t.length >> 8))
 	w.WriteByte(byte(t.length))
 
-	t.tree.dump(w)
+	for e := t.events.Front(); e != nil; e = e.Next() {
+		w.Write(e.Value.([]byte))
+	}
 }
 
 //////////////////////////////////////////////////
