@@ -21,7 +21,7 @@ var trackhead = []byte{0x4d, 0x54, 0x72, 0x6b}
 
 func NewTrack() Track {
 	return Track{
-		length: 12, // 8 bytes of header, 4 bytes of track ending event
+		length: 8, // 8 bytes of header
 		events: list.New(),
 	}
 }
@@ -34,6 +34,8 @@ func (t *Track) AddEvent(time uint32, data []byte) {
 }
 
 func (t *Track) dump(w *bufio.Writer) {
+	t.AddEvent(0, EndOfTrack())
+	
 	w.Write(trackhead)
 	w.WriteByte(byte(t.length >> 24))
 	w.WriteByte(byte(t.length >> 16))
@@ -43,10 +45,6 @@ func (t *Track) dump(w *bufio.Writer) {
 	for e := t.events.Front(); e != nil; e = e.Next() {
 		w.Write(e.Value.([]byte))
 	}
-
-	// Write the end of the track with 0 delay
-	w.Write(DeltaTime(0))
-	w.Write(EndOfTrack())
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,6 +143,7 @@ func PitchWheelChange(channel uint8, bb uint8, tt uint8) []byte {
 
 func EndOfTrack() []byte {
 	return []byte{
+		0xFF,
 		0x2F,
 		0x00,
 	}
